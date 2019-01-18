@@ -26,14 +26,18 @@ let FieldSprite = cc.Sprite.extend({
       let pickedArr = target.findAllCommonTiles(pickedTile)
       if (pickedArr.length > 1) {
         pickedArr.forEach(tile => {
-          target.removeChild(tile)
+          let action = new cc.JumpBy(0.5, 20, -100, 160, 1);
+          let seq = new cc.Sequence(action, cc.callFunc(function (tile) {
+            target.removeChild(tile)
+          }, target))
+          tile.runAction(seq)
+          // target.removeChild(tile)
           tile = null;
         })
-        console.log(target._tiles);
-
       }
     }
   },
+
 
 
   //находим row and col с учётом начала tiles
