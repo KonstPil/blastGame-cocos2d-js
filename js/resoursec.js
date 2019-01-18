@@ -2,6 +2,11 @@ let folder = 'images/';
 
 let res = {
   FIELD_IMAGE: folder + "field.png",
+  BTILE_IMAGE: folder + "blue-tile.png",
+  GTILE_IMAGE: folder + "green-tile.png",
+  PTILE_IMAGE: folder + "purple-tile.png",
+  RTILE_IMAGE: folder + "red-tile.png",
+  YTILE_IMAGE: folder + "yellow-tile.png"
 };
 
 let g_resources = [];
