@@ -25,12 +25,35 @@ let FieldSprite = cc.Sprite.extend({
       let pickedTile = target.tiles[pickedTileRowAndCol.row][pickedTileRowAndCol.col];
       let pickedArr = target.findAllCommonTiles(pickedTile)
       target.deleteTiles(pickedArr);
-      console.log(pickedArr);
-
       target.moveRemainingTiles();
+      target.addNewTiles();
     }
   },
 
+  addNewTiles() {
+    for (let i = 0; i < this.tiles.length; i++) {
+      for (let k = 0; k < this.tiles[i].length; k++) {
+        if (this.tiles[i][k] === null) {
+          let holesUpon = this.tiles.length - i;
+          this.createNewTile(i, k, holesUpon)
+        }
+      }
+    }
+  },
+
+  //после удаления создаём новые клетки и перемещаем их на место где ничего нет
+  createNewTile(row, col, holesUpon) {
+    let tile = this.createTile(row, col)
+    tile.setPosition(xTailStartOnField + col * tileWidthOnField, yTailStartOnField + (row + holesUpon) * tileHeightOnField);
+
+    let coordX = xTailStartOnField + col * tileWidthOnField;
+    let coordY = yTailStartOnField + row * tileHeightOnField;
+    let moveAction = cc.MoveTo.create(0.4, coordX, coordY);
+    tile.runAction(moveAction);
+
+    this.tiles[row][col] = tile;
+  },
+  //удаляем клетки с поля
   deleteTiles(arr) {
     if (arr.length > 1) {
       arr.forEach(tile => {
@@ -44,9 +67,10 @@ let FieldSprite = cc.Sprite.extend({
     }
   },
 
+  //сдвигаем клетки под которомы есть пустоты после удаления
   moveRemainingTiles() {
     for (let i = 1; i < this.tiles.length; i++) {
-      for (let k = 0; k < this.tiles.length; k++) {
+      for (let k = 0; k < this.tiles[i].length; k++) {
         if (this.tiles[i][k] !== null) {
           let holesBelow = 0;
           for (let m = i - 1; m >= 0; m--) {
@@ -59,19 +83,15 @@ let FieldSprite = cc.Sprite.extend({
             let coordY = this.tiles[i][k].y - holesBelow * tileHeightOnField;
             let moveAction = cc.MoveTo.create(0.4, coordX, coordY);
             this.tiles[i][k].runAction(moveAction);
-            this.tiles[i - holesBelow][k] = this.tiles[i][k];
-            this.tiles[i - holesBelow][k].row = i - holesBelow;
+            this.tiles[i - holesBelow][k] = this.tiles[i][k];//содержимое клетки 
+            this.tiles[i - holesBelow][k].row = i - holesBelow;//корректируем row для клетки(иначе будет старое значение i)
             this.tiles[i][k] = null;
-            console.log(i, i - holesBelow);
-
           }
         }
       }
     }
-    console.log(this.tiles);
-
-
   },
+
   //находим row and col с учётом начала tiles
   normalizePick(location) {
     let pickedRow = Math.floor((location.y - yTailStartOnField) / tileHeightOnField);
@@ -82,6 +102,7 @@ let FieldSprite = cc.Sprite.extend({
     }
     return null
   },
+
 
   //проверям находится ли клетка внутри игрового поля
   isWithinField(tail) {
@@ -136,14 +157,19 @@ let FieldSprite = cc.Sprite.extend({
     for (let row = 0; row < this.rows; row++) {
       this.tiles[row] = [];
       for (let col = 0; col < this.cols; col++) {
-        let fileName = this.findRandomColorForTile();
-        let tile = new TileSprite(fileName, row, col);
-        this.tiles[row].push(tile)
-        this.addChild(tile, zIndexTiles);
+        let tile = this.createTile(row, col);
         tile.setPosition(xTailStartOnField + col * tileWidthOnField, yTailStartOnField + row * tileHeightOnField);
-        tile.setAnchorPoint(0, 0)
+        this.tiles[row].push(tile);
       }
     }
+  },
+
+  createTile(row, col) {
+    let fileName = this.findRandomColorForTile();
+    let tile = new TileSprite(fileName, row, col);
+    tile.setAnchorPoint(0, 0)
+    this.addChild(tile, zIndexTiles);
+    return tile;
   },
 
   //находим рандомный цвет для ячейки
