@@ -2,7 +2,7 @@ let FieldSprite = cc.Sprite.extend({
 
   ctor(spriteFrameName) {
     this._super(spriteFrameName);
-    this._tiles = [];
+    this.tiles = [];
     this.init();
 
   },
@@ -22,24 +22,56 @@ let FieldSprite = cc.Sprite.extend({
     let location = target.convertToNodeSpace(touch.getLocation());//находим координаты относительно field
     let pickedTileRowAndCol = target.normalizePick(location);
     if (pickedTileRowAndCol) {
-      let pickedTile = target._tiles[pickedTileRowAndCol.row][pickedTileRowAndCol.col];
+      let pickedTile = target.tiles[pickedTileRowAndCol.row][pickedTileRowAndCol.col];
       let pickedArr = target.findAllCommonTiles(pickedTile)
-      if (pickedArr.length > 1) {
-        pickedArr.forEach(tile => {
-          let action = new cc.JumpBy(0.5, 20, -100, 160, 1);
-          let seq = new cc.Sequence(action, cc.callFunc(function (tile) {
-            target.removeChild(tile)
-          }, target))
-          tile.runAction(seq)
-          // target.removeChild(tile)
-          tile = null;
-        })
-      }
+      target.deleteTiles(pickedArr);
+      console.log(pickedArr);
+
+      target.moveRemainingTiles();
     }
   },
 
+  deleteTiles(arr) {
+    if (arr.length > 1) {
+      arr.forEach(tile => {
+        let action = new cc.MoveTo(0.5, 600, 500);
+        let seq = new cc.Sequence(action, cc.callFunc(function (tile) {
+          this.removeChild(tile)
+        }, this))
+        tile.runAction(seq)
+        this.tiles[tile.row][tile.col] = null;
+      })
+    }
+  },
+
+  moveRemainingTiles() {
+    for (let i = 1; i < this.tiles.length; i++) {
+      for (let k = 0; k < this.tiles.length; k++) {
+        if (this.tiles[i][k] !== null) {
+          let holesBelow = 0;
+          for (let m = i - 1; m >= 0; m--) {
+            if (this.tiles[m][k] === null) {
+              holesBelow++
+            }
+          }
+          if (holesBelow > 0) {
+            let coordX = this.tiles[i][k].x;
+            let coordY = this.tiles[i][k].y - holesBelow * tileHeightOnField;
+            let moveAction = cc.MoveTo.create(0.4, coordX, coordY);
+            this.tiles[i][k].runAction(moveAction);
+            this.tiles[i - holesBelow][k] = this.tiles[i][k];
+            this.tiles[i - holesBelow][k].row = i - holesBelow;
+            this.tiles[i][k] = null;
+            console.log(i, i - holesBelow);
+
+          }
+        }
+      }
+    }
+    console.log(this.tiles);
 
 
+  },
   //находим row and col с учётом начала tiles
   normalizePick(location) {
     let pickedRow = Math.floor((location.y - yTailStartOnField) / tileHeightOnField);
@@ -87,11 +119,11 @@ let FieldSprite = cc.Sprite.extend({
     if (this.isWithinField(leftTilePosition)) tailsWithinWield.push(leftTilePosition);
     if (this.isWithinField(rightTilePosition)) tailsWithinWield.push(rightTilePosition);
     let commonColorTails = tailsWithinWield
-      .filter(el => this._tiles[el.row][el.col].collorPng === tile.collorPng)
-      .map(el => this._tiles[el.row][el.col])
+      .filter(el => this.tiles[el.row][el.col] && this.tiles[el.row][el.col].collorPng === tile.collorPng)
+      .map(el => this.tiles[el.row][el.col])
       .filter(tile => !tile.isPicked)
-
     return commonColorTails;
+
   },
 
   whatIsFieldSize() {
@@ -102,11 +134,11 @@ let FieldSprite = cc.Sprite.extend({
   //добавляем tile на поле и создаём двумерный массив отражающий игрове поле
   addFieldTiles() {
     for (let row = 0; row < this.rows; row++) {
-      this._tiles[row] = [];
+      this.tiles[row] = [];
       for (let col = 0; col < this.cols; col++) {
         let fileName = this.findRandomColorForTile();
         let tile = new TileSprite(fileName, row, col);
-        this._tiles[row].push(tile)
+        this.tiles[row].push(tile)
         this.addChild(tile, zIndexTiles);
         tile.setPosition(xTailStartOnField + col * tileWidthOnField, yTailStartOnField + row * tileHeightOnField);
         tile.setAnchorPoint(0, 0)

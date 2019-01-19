@@ -5,6 +5,7 @@ let TileSprite = cc.Sprite.extend({
     this.col = col;
     this.collorPng = spriteFrameName;
     this.isPicked = false;
+    this.isHole = false;
   }
 
 })
