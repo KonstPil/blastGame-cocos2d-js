@@ -21,11 +21,14 @@ let GameLayer = cc.Layer.extend({
     this.field.setAnchorPoint(0, 0);
     this.addChild(this.field, 1);//z-index для слоя 
     //
-    this.progressBar = new ProgressBar(res.PROGRESS_IMAGE, 24, 29.5, 169);
-    this.progressBar.sprite.setPosition(660, 545);
+    this.progressBar = new ProgressBar(res.PROGRESS_IMAGE, 24, 29.5, 169, 1000);
+    this.progressBar.sprite.setPosition(660, 565);
     this.addChild(this.progressBar.sprite, 1);
     //
-
+    this.steps = new Steps(res.STEPS_IMAGE, 10);
+    this.steps.sprite.setPosition(662, 350);
+    this.addChild(this.steps.sprite, 1);
+    //
     cc.eventManager.addListener({
       event: cc.EventListener.TOUCH_ONE_BY_ONE,
       swallowTouches: true,
@@ -44,6 +47,8 @@ let GameLayer = cc.Layer.extend({
       target.progressBar.updateScore(commonTiles)
       target.field.moveRemainingTiles();
       target.field.addNewTiles();
+      target.steps.updateSteps()
+      target.isWinOrLose();
     }
   },
 
@@ -55,6 +60,15 @@ let GameLayer = cc.Layer.extend({
     let pick = { x: pickedX, y: pickedY };
     return pick;
   },
+
+  isWinOrLose() {
+    if (this.progressBar.isWon()) {
+      console.log('you won');
+    } else if (this.steps.isLose()) {
+      console.log('you lose');
+    }
+  }
+
 })
 
 function scene() {

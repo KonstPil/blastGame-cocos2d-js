@@ -8,6 +8,7 @@ let res = {
   RTILE_IMAGE: folder + "red-tile.png",
   YTILE_IMAGE: folder + "yellow-tile.png",
   PROGRESS_IMAGE: folder + 'progress-bar.png',
+  STEPS_IMAGE: folder + 'steps.png',
   ONEBAR_IMAGE: folder + 'one-bar.png'
 };
 

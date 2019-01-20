@@ -1,6 +1,7 @@
 class Tile {
-  constructor(file, row, col, colorIndex) {
+  constructor(file, row, col, colorIndex, zIndex) {
     this.file = file;
+    this.zIndex = zIndex;
     this.colorIndex = colorIndex;
     this.row = row;
     this.col = col;

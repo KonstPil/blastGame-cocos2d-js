@@ -1,7 +1,8 @@
 class ProgressBar {
-  constructor(file, startX, startY, progressBarLenght) {
+  constructor(file, startX, startY, progressBarLenght, goal) {
     this.startX = startX;
     this.startY = startY;
+    this.goal = goal;
     this.barLength = progressBarLenght / 100;
     this.file = file;
     this.score = 0;
@@ -15,32 +16,36 @@ class ProgressBar {
   }
 
   addScore() {
-    this.scoreText = new cc.LabelTTF("0/" + `${goal}`, "Coiny", "24", cc.TEXT_ALIGNMENT_CENTER);
+    this.scoreText = new cc.LabelTTF("0/" + `${this.goal}`, "Coiny", "24", cc.TEXT_ALIGNMENT_CENTER);
     this.sprite.addChild(this.scoreText, 2);
     this.scoreText.setPosition(113, 55);
   }
 
   updateScore(arr) {
     let dif = arr.length * 10;
-    let progress = Math.floor(this.score / goal * 100);
+    let progress = Math.floor(this.score / this.goal * 100);
 
     let update = () => {
       this.score++;
       dif--;
-      let progressNow = Math.floor(this.score / goal * 100);
-      let won = this.score > goal ? true : false;
-      if (!won) {
+      let progressNow = Math.floor(this.score / this.goal * 100);
+      if (!this.isWon()) {
         if (progressNow > progress) {
           this.addBar(progressNow)
           progress = progressNow
         }
-        this.scoreText.setString(this.score + "/" + `${goal}`);
+        this.scoreText.setString(this.score + "/" + `${this.goal}`);
         if (dif === 0) {
           this.sprite.unschedule(update)
         }
       }
     }
     this.sprite.schedule(update, 0.01);
+  }
+
+  isWon() {
+    let won = this.score > this.goal ? true : false;
+    return won
   }
 
   addBar(progress) {

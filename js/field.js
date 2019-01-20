@@ -1,7 +1,4 @@
 
-const zIndexTiles = 2;
-const goal = 1000;
-
 
 let FieldSprite = cc.Sprite.extend({
   ctor(spriteFrameName, logic, rows, colls, startGridX, startGridY) {
@@ -51,7 +48,7 @@ let FieldSprite = cc.Sprite.extend({
   createNewTile(row, col, holesUpon) {
     let tile = this.fieldlogic.createOneTile(row, col);
     tile.sprite.setPosition(this.xTailStartOnField + col * this.tileWidthOnField, this.yTailStartOnField + (row + holesUpon) * this.tileHeightOnField);
-    this.addChild(tile.sprite, zIndexTiles);
+    this.addChild(tile.sprite, tile.zIndex);
 
 
     let coordX = this.xTailStartOnField + col * this.tileWidthOnField;
@@ -86,7 +83,7 @@ let FieldSprite = cc.Sprite.extend({
         this.tileWidthOnField = tile.width;
         this.tileHeightOnField = tile.height;
         tile.setPosition(this.xTailStartOnField + j * this.tileWidthOnField, this.yTailStartOnField + i * this.tileHeightOnField);
-        this.addChild(tile, zIndexTiles);
+        this.addChild(tile, tile.zIndex);
       }
     }
   }

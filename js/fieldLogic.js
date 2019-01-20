@@ -28,7 +28,7 @@ class Field {
 
   createOneTile(row, col) {
     let tileColor = this.findRandomColorForTile();
-    let tile = new Tile(tileColor.file, row, col, tileColor.index);
+    let tile = new Tile(tileColor.file, row, col, tileColor.index, 2);
     return tile
   }
   //находим рандомный цвет для ячейки
