@@ -41,7 +41,11 @@ let GameLayer = cc.Layer.extend({
     let location = touch.getLocation();//находим координаты относительно field
     let pickedLocation = target.normalizeLocation(location);
     let pickedTileRowAndColOnField = target.field.normalizePick(pickedLocation);
+
+
     let commonTiles = target.field.fieldlogic.findTiles(pickedTileRowAndColOnField);
+
+
     if (commonTiles && commonTiles.length > 0) {
       target.field.deleteTiles(commonTiles);
       target.progressBar.updateScore(commonTiles)
@@ -62,9 +66,9 @@ let GameLayer = cc.Layer.extend({
   },
 
   isWinOrLose() {
-    if (this.progressBar.isWon()) {
+    if (this.progressBar.isWon() && !this.steps.isLose()) {
       console.log('you won');
-    } else if (this.steps.isLose()) {
+    } else if (this.steps.isLose() && !this.progressBar.isWon()) {
       console.log('you lose');
     }
   }

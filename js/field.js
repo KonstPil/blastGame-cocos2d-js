@@ -69,9 +69,26 @@ let FieldSprite = cc.Sprite.extend({
       }, this))
       tileSprite.runAction(seq);
       this.fieldlogic.tiles[tile.row][tile.col] = null;
+
+      if (tile.isSuperTile) {
+        this.createSuperTile(tile);
+      }
     })
   },
 
+
+
+  createSuperTile(tile) {
+    let superTile = new Tile(res.BOMB_IMAGE, tile.row, tile.col, 6, 2);
+    superTile.isSuperTile = true;
+    superTile.sprite.setPosition(this.xTailStartOnField + superTile.col * this.tileWidthOnField, this.yTailStartOnField + superTile.row * this.tileHeightOnField);
+    this.addChild(superTile.sprite);
+    let actionUp = new cc.ScaleTo(0.1, 1.4, 1.4);
+    let actionDown = new cc.ScaleTo(0.1, 1, 1);
+    let seq = new cc.Sequence([actionUp, actionDown]);
+    superTile.sprite.runAction(seq);
+    this.fieldlogic.tiles[tile.row][tile.col] = superTile;
+  },
 
   //добавляем tile на поле 
   addFieldTiles() {

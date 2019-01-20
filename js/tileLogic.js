@@ -7,6 +7,7 @@ class Tile {
     this.col = col;
     this.isPicked = false;
     this.isHole = false;
+    this.isSuperTile = false;
     this.init();
   }
 

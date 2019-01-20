@@ -9,10 +9,30 @@ class Field {
   findTiles(pickedTileCoord) {
     if (this.isWithinField(pickedTileCoord)) {
       let pickedTile = this.tiles[pickedTileCoord.row][pickedTileCoord.col];
+      if (pickedTile.isSuperTile) {
+        let boomArr = this.superTileAction(pickedTile);
+        pickedTile.isSuperTile = false;
+        return boomArr;
+      }
       let pickedArr = this.findAllCommonTiles(pickedTile)
-      return pickedArr
+      return pickedArr;
+
+
     }
   }
+
+  superTileAction(tile) {
+    let boomArr = [];
+    for (let i = tile.row - 1; i <= tile.row + 1; i++) {
+      for (let k = tile.col - 1; k <= tile.col + 1; k++) {
+        if (i >= 0 && i < this.rows && k >= 0 && k < this.colls) {
+          boomArr.push(this.tiles[i][k])
+        }
+      }
+    }
+    return boomArr
+  }
+
 
 
   //добавляем tile на поле и создаём двумерный массив отражающий игрове поле
@@ -62,6 +82,9 @@ class Field {
           closestCommonTiles.push(...closestTilesForCheckedTile);
           commonTiles.push(...closestCommonTiles.splice(i, 1))
         }
+      }
+      if (commonTiles.length > 1) {
+        tile.isSuperTile = true;
       }
       return commonTiles
     }

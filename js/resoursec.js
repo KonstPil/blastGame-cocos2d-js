@@ -7,6 +7,7 @@ let res = {
   PTILE_IMAGE: folder + "purple-tile.png",
   RTILE_IMAGE: folder + "red-tile.png",
   YTILE_IMAGE: folder + "yellow-tile.png",
+  BOMB_IMAGE: folder + "bomb.png",
   PROGRESS_IMAGE: folder + 'progress-bar.png',
   STEPS_IMAGE: folder + 'steps.png',
   ONEBAR_IMAGE: folder + 'one-bar.png'
