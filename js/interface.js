@@ -1,6 +1,11 @@
 class ProgressBar {
-  constructor(file) {
+  constructor(file, startX, startY, progressBarLenght) {
+    this.startX = startX;
+    this.startY = startY;
+    this.barLength = progressBarLenght / 100;
     this.file = file;
+    this.score = 0;
+    this.currentBarPosition = 0;
     this.init();
   }
 
@@ -12,15 +17,12 @@ class ProgressBar {
   addScore() {
     this.scoreText = new cc.LabelTTF("0/" + `${goal}`, "Coiny", "24", cc.TEXT_ALIGNMENT_CENTER);
     this.sprite.addChild(this.scoreText, 2);
-    this.scoreText.setAnchorPoint(0, 0)
-    this.scoreText.setPosition(80, 35);
+    this.scoreText.setPosition(113, 55);
   }
 
   updateScore(arr) {
     let dif = arr.length * 10;
     let progress = Math.floor(this.score / goal * 100);
-
-    //this.addBar(progress)
 
     let update = () => {
       this.score++;
@@ -34,31 +36,27 @@ class ProgressBar {
         }
         this.scoreText.setString(this.score + "/" + `${goal}`);
         if (dif === 0) {
-          this.unschedule(update)
+          this.sprite.unschedule(update)
         }
       }
     }
-    this.schedule(update, 0.01);
+    this.sprite.schedule(update, 0.01);
   }
 
-  // addBar(progress) {
-  //   let bars = progress - this.barPosition;
-  //   let startX = 575;
-  //   let startY = 520;
-  //   let barLength = 169 / 100;
-  //   let oneBar = new cc.Sprite(res.ONEBAR_IMAGE);
-  //   oneBar.setPosition(startX + this.barPosition * barLength, startY);
-  //   this.addChild(oneBar, 3)
-  //   let moveAction = new cc.MoveTo(0.3, startX + (this.barPosition + bars) * barLength, startY);
-  //   // let seq = new cc.Sequence(moveAction, cc.callFunc(function () {
-  //   for (let i = 0; i < bars; i++) {
-  //     let currentPosition = startX + this.barPosition * barLength;
-  //     let oneBar = new cc.Sprite(res.ONEBAR_IMAGE);
-  //     oneBar.setPosition(currentPosition + i * barLength, startY);
-  //     this.addChild(oneBar, 3);
-  //   }
-  //   oneBar.runAction(moveAction);
-  //   this.barPosition += bars;
-  // }
+  addBar(progress) {
+    let bars = progress - this.currentBarPosition;
+    let oneBar = new cc.Sprite(res.ONEBAR_IMAGE);
+    oneBar.setPosition(this.startX + this.currentBarPosition * this.barLength, this.startY);
+    this.sprite.addChild(oneBar, 1)
+    let moveAction = new cc.MoveTo(0.3, this.startX + (this.currentBarPosition + bars) * this.barLength, this.startY);
+    for (let i = 0; i < bars; i++) {
+      let currentPosition = this.startX + this.currentBarPosition * this.barLength;
+      let oneBar = new cc.Sprite(res.ONEBAR_IMAGE);
+      oneBar.setPosition(currentPosition + i * this.barLength, this.startY);
+      this.sprite.addChild(oneBar, 1);
+    }
+    oneBar.runAction(moveAction);
+    this.currentBarPosition += bars;
+  }
 
 }

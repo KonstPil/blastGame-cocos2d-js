@@ -9,34 +9,9 @@ let FieldSprite = cc.Sprite.extend({
     this.xTailStartOnField = startGridX;
     this.yTailStartOnField = startGridY;
     this.fieldlogic = new logic(rows, colls);
-    this.score = 0;
-    this.barPosition = 0;
-    this.init();
-  },
-
-  init() {
-    cc.eventManager.addListener({
-      event: cc.EventListener.TOUCH_ONE_BY_ONE,
-      swallowTouches: true,
-      onTouchBegan: this.onTouchBegan,
-    }, this)
     this.addFieldTiles();
   },
 
-
-
-  onTouchBegan(touch, event) {
-    let target = event.getCurrentTarget();
-    let location = target.convertToNodeSpace(touch.getLocation());//находим координаты относительно field
-    let pickedTileRowAndCol = target.normalizePick(location);
-    let commonTiles = target.fieldlogic.findTiles(pickedTileRowAndCol);
-    if (commonTiles && commonTiles.length > 0) {
-      target.deleteTiles(commonTiles);
-      //target.updateScore(pickedArr)
-      target.moveRemainingTiles();
-      target.addNewTiles();
-    }
-  },
 
   //находим row and col с учётом начала tiles
   normalizePick(location) {

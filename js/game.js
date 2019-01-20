@@ -1,8 +1,10 @@
 
 
 let GameLayer = cc.Layer.extend({
-  ctor() {
+  ctor(fieldStartX, fieldStartY) {
     this._super();
+    this.fieldStartX = fieldStartX;
+    this.fieldStartY = fieldStartY;
     this.init();
   },
 
@@ -14,24 +16,50 @@ let GameLayer = cc.Layer.extend({
       size.width, size.height);
     this.addChild(background, 0);//z-index для слоя 
     //устанавливаем field and tiles
-    this.fieldSprite = new FieldSprite(res.FIELD_IMAGE, Field, 9, 9, 15, 13);
-    this.fieldSprite.setPosition(18, 18);
-    this.fieldSprite.setAnchorPoint(0, 0);
-    this.addChild(this.fieldSprite, 1);//z-index для слоя 
+    this.field = new FieldSprite(res.FIELD_IMAGE, Field, 9, 9, 15, 13);
+    this.field.setPosition(this.fieldStartX, this.fieldStartY);
+    this.field.setAnchorPoint(0, 0);
+    this.addChild(this.field, 1);//z-index для слоя 
     //
-    this.progressBar = new ProgressBar(res.PROGRESS_IMAGE);
+    this.progressBar = new ProgressBar(res.PROGRESS_IMAGE, 24, 29.5, 169);
     this.progressBar.sprite.setPosition(660, 545);
     this.addChild(this.progressBar.sprite, 1);
     //
 
+    cc.eventManager.addListener({
+      event: cc.EventListener.TOUCH_ONE_BY_ONE,
+      swallowTouches: true,
+      onTouchBegan: this.onTouchBegan,
+    }, this)
+  },
+
+  onTouchBegan(touch, event) {
+    let target = event.getCurrentTarget();
+    let location = touch.getLocation();//находим координаты относительно field
+    let pickedLocation = target.normalizeLocation(location);
+    let pickedTileRowAndColOnField = target.field.normalizePick(pickedLocation);
+    let commonTiles = target.field.fieldlogic.findTiles(pickedTileRowAndColOnField);
+    if (commonTiles && commonTiles.length > 0) {
+      target.field.deleteTiles(commonTiles);
+      target.progressBar.updateScore(commonTiles)
+      target.field.moveRemainingTiles();
+      target.field.addNewTiles();
+    }
   },
 
 
+  //находим row and col с учётом начала field
+  normalizeLocation(location) {
+    let pickedY = location.y - this.fieldStartY;
+    let pickedX = location.x - this.fieldStartX;
+    let pick = { x: pickedX, y: pickedY };
+    return pick;
+  },
 })
 
 function scene() {
   let scene = new cc.Scene();
-  let layer = new GameLayer();
+  let layer = new GameLayer(18, 18);
   scene.addChild(layer);
   return scene;
 }
