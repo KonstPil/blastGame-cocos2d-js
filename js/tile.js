@@ -1,5 +1,5 @@
 let TileSprite = cc.Sprite.extend({
-  ctor(spriteFrameName, row, col) {
+  ctor(spriteFrameName) {
     this._super(spriteFrameName);
     this.row = row;
     this.col = col;

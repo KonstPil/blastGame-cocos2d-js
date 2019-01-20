@@ -7,7 +7,6 @@ let GameLayer = cc.Layer.extend({
   },
 
   init() {
-    this._super();
     //размер окна
     let size = cc.director.getWinSize();
     //устанавливаем bg
@@ -15,7 +14,7 @@ let GameLayer = cc.Layer.extend({
       size.width, size.height);
     this.addChild(background, 0);//z-index для слоя 
     //устанавливаем field and tiles
-    let fieldSprite = new FieldSprite(res.FIELD_IMAGE);
+    let fieldSprite = new FieldSprite(res.FIELD_IMAGE, Field, 9, 9);
     fieldSprite.setPosition(18, 18);
     fieldSprite.setAnchorPoint(0, 0)
     this.addChild(fieldSprite, 1);//z-index для слоя 
@@ -24,7 +23,7 @@ let GameLayer = cc.Layer.extend({
     progressBar.setPosition(660, 545);
     fieldSprite.addChild(progressBar, 1);
     //
-    
+
   },
 
   onEnter() {
