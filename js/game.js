@@ -14,25 +14,22 @@ let GameLayer = cc.Layer.extend({
       size.width, size.height);
     this.addChild(background, 0);//z-index для слоя 
     //устанавливаем field and tiles
-    let fieldSprite = new FieldSprite(res.FIELD_IMAGE, Field, 9, 9);
-    fieldSprite.setPosition(18, 18);
-    fieldSprite.setAnchorPoint(0, 0)
-    this.addChild(fieldSprite, 1);//z-index для слоя 
+    this.fieldSprite = new FieldSprite(res.FIELD_IMAGE, Field, 9, 9, 15, 13);
+    this.fieldSprite.setPosition(18, 18);
+    this.fieldSprite.setAnchorPoint(0, 0);
+    this.addChild(this.fieldSprite, 1);//z-index для слоя 
     //
-    let progressBar = new cc.Sprite(res.PROGRESS_IMAGE);
-    progressBar.setPosition(660, 545);
-    fieldSprite.addChild(progressBar, 1);
+    this.progressBar = new ProgressBar(res.PROGRESS_IMAGE);
+    this.progressBar.sprite.setPosition(660, 545);
+    this.addChild(this.progressBar.sprite, 1);
     //
 
   },
 
-  onEnter() {
-    this._super();
-  },
 
 })
 
-GameLayer.scene = function () {
+function scene() {
   let scene = new cc.Scene();
   let layer = new GameLayer();
   scene.addChild(layer);
@@ -48,7 +45,7 @@ window.onload = function () {
     cc.view.resizeWithBrowserSize(true);
     //load resources
     cc.LoaderScene.preload(g_resources, function () {
-      cc.director.runScene(GameLayer.scene());
+      cc.director.runScene(scene());
     }, this);
   };
   cc.game.run("gameCanvas");

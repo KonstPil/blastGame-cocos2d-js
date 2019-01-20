@@ -90,7 +90,8 @@ class Field {
   }
 
   //сдвигаем клетки под которомы есть пустоты после удаления
-  moveRemainingTiles() {
+  whichTilesNeedMove() {
+    let tilesToMove = [];
     for (let i = 1; i < this.rows; i++) {
       for (let k = 0; k < this.colls; k++) {
         if (this.tiles[i][k] !== null) {
@@ -101,10 +102,7 @@ class Field {
             }
           }
           if (holesBelow > 0) {
-            let coordX = this.tiles[i][k].sprite.x;
-            let coordY = this.tiles[i][k].sprite.y - holesBelow * tileHeightOnField;
-            let moveAction = new cc.MoveTo(0.4, coordX, coordY);
-            this.tiles[i][k].sprite.runAction(moveAction);
+            tilesToMove.push({ tile: this.tiles[i][k], holesBelow })
             //
             this.tiles[i - holesBelow][k] = this.tiles[i][k];//содержимое клетки 
             this.tiles[i - holesBelow][k].row = i - holesBelow;//корректируем row для клетки(иначе будет старое значение i)
@@ -113,6 +111,7 @@ class Field {
         }
       }
     }
+    return tilesToMove
   }
 
 }

@@ -1,20 +1,13 @@
-const tileWidthOnField = 53;
-const tileHeightOnField = 60;
-const xTailStartOnField = 15;
-const yTailStartOnField = 13;
+
 const zIndexTiles = 2;
 const goal = 1000;
 
 
 let FieldSprite = cc.Sprite.extend({
-  ctor(spriteFrameName, logic, rows, colls) {
+  ctor(spriteFrameName, logic, rows, colls, startGridX, startGridY) {
     this._super(spriteFrameName);
-    this.rows = rows;
-    this.colls = colls;
-    this.tileWidthOnField = 53;
-    this.tileHeightOnField = 60;
-    this.xTailStartOnField = 15;
-    this.yTailStartOnField = 13;
+    this.xTailStartOnField = startGridX;
+    this.yTailStartOnField = startGridY;
     this.fieldlogic = new logic(rows, colls);
     this.score = 0;
     this.barPosition = 0;
@@ -28,25 +21,19 @@ let FieldSprite = cc.Sprite.extend({
       onTouchBegan: this.onTouchBegan,
     }, this)
     this.addFieldTiles();
-    this.addScore();
   },
 
-  addScore() {
-    this.scoreText = new cc.LabelTTF("0/" + `${goal}`, "Coiny", "24", cc.TEXT_ALIGNMENT_CENTER);
-    this.addChild(this.scoreText, 2);
-    this.scoreText.setPosition(665, 542);
-  },
+
 
   onTouchBegan(touch, event) {
     let target = event.getCurrentTarget();
     let location = target.convertToNodeSpace(touch.getLocation());//находим координаты относительно field
     let pickedTileRowAndCol = target.normalizePick(location);
     let commonTiles = target.fieldlogic.findTiles(pickedTileRowAndCol);
-    console.log(commonTiles);
     if (commonTiles && commonTiles.length > 0) {
       target.deleteTiles(commonTiles);
       //target.updateScore(pickedArr)
-      target.fieldlogic.moveRemainingTiles();
+      target.moveRemainingTiles();
       target.addNewTiles();
     }
   },
@@ -59,6 +46,20 @@ let FieldSprite = cc.Sprite.extend({
     return tail;
   },
 
+  //сдвигаем клетки под которомы есть пустоты после удаления
+  moveRemainingTiles() {
+    let movingTiles = this.fieldlogic.whichTilesNeedMove();
+    movingTiles.forEach(tileToMove => {
+      let tile = tileToMove.tile;
+      let holesBelow = tileToMove.holesBelow;
+      let coordX = tile.sprite.x;
+      let coordY = tile.sprite.y - holesBelow * this.tileHeightOnField;
+      let moveAction = new cc.MoveTo(0.4, coordX, coordY);
+      tile.sprite.runAction(moveAction);
+    })
+
+
+  },
   //находим клетки с пропусками и вызываемcreateNewTile
   addNewTiles() {
     for (let i = 0; i < this.fieldlogic.rows; i++) {
@@ -74,12 +75,12 @@ let FieldSprite = cc.Sprite.extend({
   //создаём новые клетки и перемещаем их на место где ничего нет
   createNewTile(row, col, holesUpon) {
     let tile = this.fieldlogic.createOneTile(row, col);
-    tile.sprite.setPosition(xTailStartOnField + col * tileWidthOnField, yTailStartOnField + (row + holesUpon) * tileHeightOnField);
+    tile.sprite.setPosition(this.xTailStartOnField + col * this.tileWidthOnField, this.yTailStartOnField + (row + holesUpon) * this.tileHeightOnField);
     this.addChild(tile.sprite, zIndexTiles);
 
 
-    let coordX = xTailStartOnField + col * tileWidthOnField;
-    let coordY = yTailStartOnField + row * tileHeightOnField;
+    let coordX = this.xTailStartOnField + col * this.tileWidthOnField;
+    let coordY = this.yTailStartOnField + row * this.tileHeightOnField;
     let moveAction = new cc.MoveTo(0.4, coordX, coordY);
     tile.sprite.runAction(moveAction);
 
@@ -99,50 +100,6 @@ let FieldSprite = cc.Sprite.extend({
     })
   },
 
-  updateScore(arr) {
-    let dif = arr.length * 10;
-    let progress = Math.floor(this.score / goal * 100);
-
-    //this.addBar(progress)
-
-    let update = () => {
-      this.score++;
-      dif--;
-      let progress2 = Math.floor(this.score / goal * 100);
-      let won = this.score > goal ? true : false;
-      if (!won) {
-        if (progress2 > progress) {
-          this.addBar(progress2)
-          progress = progress2
-        }
-        this.scoreText.setString(this.score + "/" + `${goal}`);
-        if (dif === 0) {
-          this.unschedule(update)
-        }
-      }
-    }
-    this.schedule(update, 0.01);
-  },
-
-  addBar(progress) {
-    let bars = progress - this.barPosition;
-    let startX = 575;
-    let startY = 520;
-    let barLength = 169 / 100;
-    let oneBar = new cc.Sprite(res.ONEBAR_IMAGE);
-    oneBar.setPosition(startX + this.barPosition * barLength, startY);
-    this.addChild(oneBar, 3)
-    let moveAction = new cc.MoveTo(0.3, startX + (this.barPosition + bars) * barLength, startY);
-    // let seq = new cc.Sequence(moveAction, cc.callFunc(function () {
-    for (let i = 0; i < bars; i++) {
-      let currentPosition = startX + this.barPosition * barLength;
-      let oneBar = new cc.Sprite(res.ONEBAR_IMAGE);
-      oneBar.setPosition(currentPosition + i * barLength, startY);
-      this.addChild(oneBar, 3);
-    }
-    oneBar.runAction(moveAction);
-    this.barPosition += bars;
-  },
 
   //добавляем tile на поле 
   addFieldTiles() {
@@ -151,6 +108,8 @@ let FieldSprite = cc.Sprite.extend({
     for (let i = 0; i < rows; i++) {
       for (let j = 0; j < colls; j++) {
         let tile = this.fieldlogic.tiles[i][j].sprite;
+        this.tileWidthOnField = tile.width;
+        this.tileHeightOnField = tile.height;
         tile.setPosition(this.xTailStartOnField + j * this.tileWidthOnField, this.yTailStartOnField + i * this.tileHeightOnField);
         this.addChild(tile, zIndexTiles);
       }
