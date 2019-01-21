@@ -50,12 +50,13 @@ let FieldSprite = cc.Sprite.extend({
     tile.sprite.setPosition(this.xTailStartOnField + col * this.tileWidthOnField, this.yTailStartOnField + (row + holesUpon) * this.tileHeightOnField);
     this.addChild(tile.sprite, tile.zIndex);
 
-
     let coordX = this.xTailStartOnField + col * this.tileWidthOnField;
     let coordY = this.yTailStartOnField + row * this.tileHeightOnField;
     let moveAction = new cc.MoveTo(0.4, coordX, coordY);
     tile.sprite.runAction(moveAction);
-
+    if (tile.isSuperTile) {
+      this.foreverAnimationForSuperTile(tile.sprite);
+    }
     this.fieldlogic.tiles[row][col] = tile;
   },
 
@@ -79,15 +80,15 @@ let FieldSprite = cc.Sprite.extend({
 
 
   createSuperTile(tile) {
-    let superTile = new Tile(res.BOMB_IMAGE, tile.row, tile.col, 6, 2);
-    superTile.isSuperTile = true;
+    let superTile = this.fieldlogic.createSuperTile(tile);
     superTile.sprite.setPosition(this.xTailStartOnField + superTile.col * this.tileWidthOnField, this.yTailStartOnField + superTile.row * this.tileHeightOnField);
     this.addChild(superTile.sprite);
     let actionUp = new cc.ScaleTo(0.1, 1.4, 1.4);
     let actionDown = new cc.ScaleTo(0.1, 1, 1);
     let seq = new cc.Sequence([actionUp, actionDown]);
     superTile.sprite.runAction(seq);
-    this.fieldlogic.tiles[tile.row][tile.col] = superTile;
+    this.foreverAnimationForSuperTile(superTile.sprite);
+
   },
 
   //добавляем tile на поле 
@@ -101,7 +102,18 @@ let FieldSprite = cc.Sprite.extend({
         this.tileHeightOnField = tile.height;
         tile.setPosition(this.xTailStartOnField + j * this.tileWidthOnField, this.yTailStartOnField + i * this.tileHeightOnField);
         this.addChild(tile, tile.zIndex);
+        if (this.fieldlogic.tiles[i][j].isSuperTile) {
+          this.foreverAnimationForSuperTile(tile);
+        }
       }
     }
+  },
+
+  foreverAnimationForSuperTile(tileSprite) {
+    let actionUp = new cc.ScaleTo(0.75, 1.06, 1.06);
+    let actionDown = new cc.ScaleTo(0.75, 1, 1);
+    let seq = new cc.Sequence([actionUp, actionDown]);
+    var repeatForever = new cc.RepeatForever(seq);
+    tileSprite.runAction(repeatForever);
   }
 })

@@ -21,11 +21,11 @@ let GameLayer = cc.Layer.extend({
     this.field.setAnchorPoint(0, 0);
     this.addChild(this.field, 1);//z-index для слоя 
     //
-    this.progressBar = new ProgressBar(res.PROGRESS_IMAGE, 24, 29.5, 169, 1000);
+    this.progressBar = new ProgressBar(res.PROGRESS_IMAGE, 24, 29.5, 169, 5000);
     this.progressBar.sprite.setPosition(660, 565);
     this.addChild(this.progressBar.sprite, 1);
     //
-    this.steps = new Steps(res.STEPS_IMAGE, 10);
+    this.steps = new Steps(res.STEPS_IMAGE, 20);
     this.steps.sprite.setPosition(662, 350);
     this.addChild(this.steps.sprite, 1);
     //

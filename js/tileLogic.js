@@ -1,5 +1,5 @@
 class Tile {
-  constructor(file, row, col, colorIndex, zIndex) {
+  constructor(file, row, col, colorIndex, zIndex, isSuperTile) {
     this.file = file;
     this.zIndex = zIndex;
     this.colorIndex = colorIndex;
@@ -7,7 +7,7 @@ class Tile {
     this.col = col;
     this.isPicked = false;
     this.isHole = false;
-    this.isSuperTile = false;
+    this.isSuperTile = isSuperTile;
     this.init();
   }
 
