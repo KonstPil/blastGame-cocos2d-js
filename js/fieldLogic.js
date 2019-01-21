@@ -11,15 +11,15 @@ class Field {
     if (this.isWithinField(pickedTileCoord)) {
       let pickedTile = this.tiles[pickedTileCoord.row][pickedTileCoord.col];
       if (pickedTile.isSuperTile) {
-        let boomArr = this.superTileAction(pickedTile, 1);
-        arrInfo.arr = boomArr;
+        let boomObj = this.superTileAction(pickedTile, 1);;
+        arrInfo.arr = boomObj.boomArr;
         arrInfo.type = 2;//superTile
-        arrInfo.pickedTile = pickedTile;
+        arrInfo.superTiles = boomObj.superTiles;
+
       } else {
         let pickedArr = this.findAllCommonTiles(pickedTile, 2)
         arrInfo.arr = pickedArr;
         arrInfo.type = 1;//superTile
-        arrInfo.pickedTile = pickedTile;
       }
 
     }
@@ -28,19 +28,25 @@ class Field {
 
   //взрываем клетки вокруг superTile и если в радиусе есть ещё 1 superTIle детонируем и его
   superTileAction(tile, radius) {
+    let superTiles = [];
     let boomArr = this.tilesForSuperTileBoom(tile, radius);
     let tilesForCheck = boomArr.filter(tile => tile.isSuperTile);
     while (tilesForCheck.length > 0) {
+
       for (let i = 0; i < tilesForCheck.length; i++) {
         let tile = tilesForCheck[i];
         tile.isSuperTile = false;
         let detonateNear = this.tilesForSuperTileBoom(tile, radius);
-        boomArr.push(...detonateNear);
-        tilesForCheck.push(...detonateNear.filter(tile => tile.isSuperTile))
-        tilesForCheck.splice(i, 1)
+        boomArr.push(...detonateNear.filter(tile => !boomArr.includes(tile)));
+        tilesForCheck.push(...detonateNear.filter(tile => tile.isSuperTile && !tilesForCheck.includes(tile)))
+        tilesForCheck.splice(i, 1);
+        superTiles.push(tile)
       }
+
     }
-    return boomArr
+
+
+    return { boomArr, superTiles }
   }
 
   tilesForSuperTileBoom(superTile, radius) {

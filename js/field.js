@@ -15,7 +15,6 @@ let FieldSprite = cc.Sprite.extend({
     let pickedRow = Math.floor((location.y - this.yTailStartOnField + this.tileHeightOnField / 2) / this.tileHeightOnField);
     let pickedCol = Math.floor((location.x - this.xTailStartOnField + this.tileWidthOnField / 2) / this.tileWidthOnField);
     let tail = { row: pickedRow, col: pickedCol };
-    console.log(tail);
     return tail;
   },
 
@@ -49,15 +48,18 @@ let FieldSprite = cc.Sprite.extend({
   createNewTile(row, col, holesUpon) {
     let tile = this.fieldlogic.createOneTile(row, col);
     tile.sprite.setPosition(this.xTailStartOnField + col * this.tileWidthOnField, this.yTailStartOnField + (row + holesUpon) * this.tileHeightOnField);
-    this.addChild(tile.sprite, tile.zIndex);
+    if (tile.isSuperTile) {
+      this.foreverAnimationForSuperTile(tile.sprite);
+      this.addChild(tile.sprite, tile.zIndex + 1);
+    } else {
+      this.addChild(tile.sprite, tile.zIndex);
+    }
+
 
     let coordX = this.xTailStartOnField + col * this.tileWidthOnField;
     let coordY = this.yTailStartOnField + row * this.tileHeightOnField;
     let moveAction = new cc.MoveTo(0.4, coordX, coordY);
     tile.sprite.runAction(moveAction);
-    if (tile.isSuperTile) {
-      this.foreverAnimationForSuperTile(tile.sprite);
-    }
     this.fieldlogic.tiles[row][col] = tile;
   },
 
@@ -83,7 +85,7 @@ let FieldSprite = cc.Sprite.extend({
   createSuperTile(tile) {
     let superTile = this.fieldlogic.createSuperTile(tile);
     superTile.sprite.setPosition(this.xTailStartOnField + superTile.col * this.tileWidthOnField, this.yTailStartOnField + superTile.row * this.tileHeightOnField);
-    this.addChild(superTile.sprite);
+    this.addChild(superTile.sprite, tile.zIndex + 1);
     let actionUp = new cc.ScaleTo(0.1, 1.4, 1.4);
     let actionDown = new cc.ScaleTo(0.1, 1, 1);
     let seq = new cc.Sequence([actionUp, actionDown]);
@@ -102,19 +104,30 @@ let FieldSprite = cc.Sprite.extend({
         this.tileWidthOnField = tile.width;
         this.tileHeightOnField = tile.height;
         tile.setPosition(this.xTailStartOnField + j * this.tileWidthOnField, this.yTailStartOnField + i * this.tileHeightOnField);
-        this.addChild(tile, tile.zIndex);
         if (this.fieldlogic.tiles[i][j].isSuperTile) {
           this.foreverAnimationForSuperTile(tile);
+          this.addChild(tile, tile.zIndex + 1);
+        } else {
+          this.addChild(tile, tile.zIndex);
         }
       }
     }
   },
 
   foreverAnimationForSuperTile(tileSprite) {
-    let actionUp = new cc.ScaleTo(0.75, 1.06, 1.06);
+    let actionUp = new cc.ScaleTo(0.75, 1.07, 1.07);
     let actionDown = new cc.ScaleTo(0.75, 1, 1);
     let seq = new cc.Sequence([actionUp, actionDown]);
     var repeatForever = new cc.RepeatForever(seq);
     tileSprite.runAction(repeatForever);
+  },
+
+  animationForSuperTiles(arr, cb) {
+    for (let i = 0; i < arr.length; i++) {
+      if (i === 0) {
+        arr[i].sprite.runAction(cc.sequence(cc.scaleTo(0.5, 3, 3), cc.scaleTo(0.1, 1, 1), cc.callFunc(cb, this)));
+      }
+      arr[i].sprite.runAction(cc.sequence(cc.scaleTo(0.5, 3, 3), cc.scaleTo(0.1, 1, 1)));
+    }
   }
 })

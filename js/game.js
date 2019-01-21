@@ -5,6 +5,7 @@ let GameLayer = cc.Layer.extend({
     this._super();
     this.fieldStartX = fieldStartX;
     this.fieldStartY = fieldStartY;
+    this.canIPick = true;
     this.init();
   },
 
@@ -38,39 +39,39 @@ let GameLayer = cc.Layer.extend({
 
   onTouchBegan(touch, event) {
     let target = event.getCurrentTarget();
-    let location = touch.getLocation();//находим координаты относительно field
-    let pickedLocation = target.normalizeLocation(location);
-    let pickedTileRowAndColOnField = target.field.normalizePick(pickedLocation);
+    if (target.canIPick) {
+      let location = touch.getLocation();//находим координаты относительно field
+      let pickedLocation = target.normalizeLocation(location);
+      let pickedTileRowAndColOnField = target.field.normalizePick(pickedLocation);
+      let arrInfo = target.field.fieldlogic.findTiles(pickedTileRowAndColOnField);
+      let commonTiles = arrInfo.arr;
+      let arrType = arrInfo.type;
+      if (commonTiles && commonTiles.length > 0) {
+        if (arrType === 2) {
+          target.canIPick = false;
+          let pick = arrInfo.superTiles;
+          target.field.animationForSuperTiles(pick, function () {
+            target.mainGameLogic(commonTiles);
+            target.canIPick = true;
+          });
 
-    // let targetTile = 
-    let arrInfo = target.field.fieldlogic.findTiles(pickedTileRowAndColOnField);
-    let commonTiles = arrInfo.arr;
-    let arrType = arrInfo.type;
-    let pick = arrInfo.pickedTile;
+        } else {
+          target.mainGameLogic(commonTiles)
+        }
 
-    if (commonTiles && commonTiles.length > 0) {
-      if (arrType === 2) {
-        pick.sprite.runAction(cc.sequence(cc.scaleTo(1, 0, 1), cc.scaleTo(0.1, 3, 3), cc.callFunc(function () {
-          target.field.deleteTiles(commonTiles);
-          target.progressBar.updateScore(commonTiles)
-          target.field.moveRemainingTiles();
-          target.field.addNewTiles();
-          target.steps.updateSteps()
-          target.isWinOrLose();
-        }, this)));
-      } else {
-        target.field.deleteTiles(commonTiles);
-        target.progressBar.updateScore(commonTiles)
-        target.field.moveRemainingTiles();
-        target.field.addNewTiles();
-        target.steps.updateSteps()
-        target.isWinOrLose();
       }
-
     }
+
   },
 
-
+  mainGameLogic(arr) {
+    this.field.deleteTiles(arr);
+    this.progressBar.updateScore(arr)
+    this.field.moveRemainingTiles();
+    this.field.addNewTiles();
+    this.steps.updateSteps()
+    this.isWinOrLose();
+  },
 
 
   //находим row and col с учётом начала field
