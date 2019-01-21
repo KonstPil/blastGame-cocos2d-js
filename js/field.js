@@ -12,9 +12,10 @@ let FieldSprite = cc.Sprite.extend({
 
   //находим row and col с учётом начала tiles
   normalizePick(location) {
-    let pickedRow = Math.floor((location.y - this.yTailStartOnField) / this.tileHeightOnField);
-    let pickedCol = Math.floor((location.x - this.xTailStartOnField) / this.tileWidthOnField);
+    let pickedRow = Math.floor((location.y - this.yTailStartOnField + this.tileHeightOnField / 2) / this.tileHeightOnField);
+    let pickedCol = Math.floor((location.x - this.xTailStartOnField + this.tileWidthOnField / 2) / this.tileWidthOnField);
     let tail = { row: pickedRow, col: pickedCol };
+    console.log(tail);
     return tail;
   },
 
@@ -64,7 +65,7 @@ let FieldSprite = cc.Sprite.extend({
   deleteTiles(arr) {
     arr.forEach(tile => {
       let tileSprite = tile.sprite;
-      let action = new cc.MoveTo(0.5, 600, 500);
+      let action = new cc.MoveTo(0.5, 626.5, 530);
       let seq = new cc.Sequence(action, cc.callFunc(function (tileSprite) {
         this.removeChild(tileSprite)
       }, this))

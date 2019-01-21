@@ -16,7 +16,7 @@ let GameLayer = cc.Layer.extend({
       size.width, size.height);
     this.addChild(background, 0);//z-index для слоя 
     //устанавливаем field and tiles
-    this.field = new FieldSprite(res.FIELD_IMAGE, Field, 9, 9, 15, 13);
+    this.field = new FieldSprite(res.FIELD_IMAGE, Field, 9, 9, 41.5, 43);
     this.field.setPosition(this.fieldStartX, this.fieldStartY);
     this.field.setAnchorPoint(0, 0);
     this.addChild(this.field, 1);//z-index для слоя 
@@ -42,19 +42,35 @@ let GameLayer = cc.Layer.extend({
     let pickedLocation = target.normalizeLocation(location);
     let pickedTileRowAndColOnField = target.field.normalizePick(pickedLocation);
 
-
-    let commonTiles = target.field.fieldlogic.findTiles(pickedTileRowAndColOnField);
-
+    // let targetTile = 
+    let arrInfo = target.field.fieldlogic.findTiles(pickedTileRowAndColOnField);
+    let commonTiles = arrInfo.arr;
+    let arrType = arrInfo.type;
+    let pick = arrInfo.pickedTile;
 
     if (commonTiles && commonTiles.length > 0) {
-      target.field.deleteTiles(commonTiles);
-      target.progressBar.updateScore(commonTiles)
-      target.field.moveRemainingTiles();
-      target.field.addNewTiles();
-      target.steps.updateSteps()
-      target.isWinOrLose();
+      if (arrType === 2) {
+        pick.sprite.runAction(cc.sequence(cc.scaleTo(1, 0, 1), cc.scaleTo(0.1, 3, 3), cc.callFunc(function () {
+          target.field.deleteTiles(commonTiles);
+          target.progressBar.updateScore(commonTiles)
+          target.field.moveRemainingTiles();
+          target.field.addNewTiles();
+          target.steps.updateSteps()
+          target.isWinOrLose();
+        }, this)));
+      } else {
+        target.field.deleteTiles(commonTiles);
+        target.progressBar.updateScore(commonTiles)
+        target.field.moveRemainingTiles();
+        target.field.addNewTiles();
+        target.steps.updateSteps()
+        target.isWinOrLose();
+      }
+
     }
   },
+
+
 
 
   //находим row and col с учётом начала field

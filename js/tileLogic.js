@@ -13,6 +13,5 @@ class Tile {
 
   init() {
     this.sprite = new cc.Sprite(this.file);
-    this.sprite.setAnchorPoint(0, 0)
   }
 }

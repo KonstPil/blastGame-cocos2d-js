@@ -7,17 +7,23 @@ class Field {
   }
 
   findTiles(pickedTileCoord) {
+    let arrInfo = {};
     if (this.isWithinField(pickedTileCoord)) {
       let pickedTile = this.tiles[pickedTileCoord.row][pickedTileCoord.col];
       if (pickedTile.isSuperTile) {
         let boomArr = this.superTileAction(pickedTile, 1);
-        return boomArr;
+        arrInfo.arr = boomArr;
+        arrInfo.type = 2;//superTile
+        arrInfo.pickedTile = pickedTile;
+      } else {
+        let pickedArr = this.findAllCommonTiles(pickedTile, 2)
+        arrInfo.arr = pickedArr;
+        arrInfo.type = 1;//superTile
+        arrInfo.pickedTile = pickedTile;
       }
-      let pickedArr = this.findAllCommonTiles(pickedTile, 7)
-      return pickedArr;
-
 
     }
+    return arrInfo
   }
 
   //взрываем клетки вокруг superTile и если в радиусе есть ещё 1 superTIle детонируем и его
@@ -41,7 +47,7 @@ class Field {
     let boomArr = [];
     for (let i = superTile.row - radius; i <= superTile.row + radius; i++) {
       for (let k = superTile.col - radius; k <= superTile.col + radius; k++) {
-        if (i >= 0 && i < this.rows && k >= 0 && k < this.colls && this.tiles[i][k]) {
+        if (this.isWithinField({ row: i, col: k }) && this.tiles[i][k]) {
           boomArr.push(this.tiles[i][k])
         }
       }
@@ -150,7 +156,7 @@ class Field {
   findRandomColorForTile() {
     let tile;
     let randomNumber = Math.random();
-    if (randomNumber > 0.97) {
+    if (randomNumber > 0.98) {
       tile = { file: res.BOMB_IMAGE, index: 6, isSuperTile: true }
     } else {
       let tilesFiles = [
