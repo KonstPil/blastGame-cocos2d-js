@@ -1,3 +1,8 @@
+const colorIndexForSuperTile = 0;
+const radiusAroundSuperTileForDelete = 1;//радиус вокруг супер тайла, т.е клетки коготорые мы будем удалять
+const tilesForCreateSuperTile = 6;//сколько тайлов одинакового цвета надо для создания супер тайла
+const oddsForSuperTileCreation = 0.011;//вероятность появления супер тайлов на поле (макс значение 1)
+
 class Field {
   constructor(rows, colls) {
     this.rows = rows;
@@ -11,15 +16,15 @@ class Field {
     if (this.isWithinField(pickedTileCoord)) {
       let pickedTile = this.tiles[pickedTileCoord.row][pickedTileCoord.col];
       if (pickedTile.isSuperTile) {
-        let boomObj = this.superTileAction(pickedTile, 1);;
+        let boomObj = this.superTileAction(pickedTile, radiusAroundSuperTileForDelete);;
         arrInfo.arr = boomObj.boomArr;
-        arrInfo.type = 2;//superTile
+        arrInfo.isSuperTileWasPicked = true;//superTile
         arrInfo.superTiles = boomObj.superTiles;
 
       } else {
-        let pickedArr = this.findAllCommonTiles(pickedTile, 2)
+        let pickedArr = this.findAllCommonTiles(pickedTile, tilesForCreateSuperTile)
         arrInfo.arr = pickedArr;
-        arrInfo.type = 1;//superTile
+        arrInfo.isSuperTileWasPicked = false;//superTile
       }
 
     }
@@ -75,12 +80,12 @@ class Field {
 
   createOneTile(row, col) {
     let tileInfo = this.findRandomColorForTile();
-    let tile = new Tile(tileInfo.file, row, col, tileInfo.index, 2, tileInfo.isSuperTile);
+    let tile = new Tile(tileInfo.file, row, col, tileInfo.colorIndex, tileInfo.isSuperTile);
     return tile
   }
 
   createSuperTile(tile) {
-    let superTile = new Tile(res.BOMB_IMAGE, tile.row, tile.col, 6, 2, true);
+    let superTile = new Tile(res.BOMB_IMAGE, tile.row, tile.col, colorIndexForSuperTile, true);
     this.tiles[tile.row][tile.col] = superTile;
     return superTile
   }
@@ -104,7 +109,7 @@ class Field {
           commonTiles.push(...closestCommonTiles.splice(i, 1))
         }
       }
-      if (commonTiles.length > tilesForSuperTile) {
+      if (commonTiles.length >= tilesForSuperTile) {
         tile.isSuperTile = true;
       }
       return commonTiles
@@ -162,15 +167,15 @@ class Field {
   findRandomColorForTile() {
     let tile;
     let randomNumber = Math.random();
-    if (randomNumber > 0.98) {
-      tile = { file: res.BOMB_IMAGE, index: 6, isSuperTile: true }
+    if (randomNumber < oddsForSuperTileCreation) {
+      tile = { file: res.BOMB_IMAGE, colorIndex: colorIndexForSuperTile, isSuperTile: true }
     } else {
       let tilesFiles = [
-        { file: res.BTILE_IMAGE, index: 1, isSuperTile: false },
-        { file: res.GTILE_IMAGE, index: 2, isSuperTile: false },
-        { file: res.PTILE_IMAGE, index: 3, isSuperTile: false },
-        { file: res.RTILE_IMAGE, index: 4, isSuperTile: false },
-        { file: res.YTILE_IMAGE, index: 5, isSuperTile: false }];
+        { file: res.BTILE_IMAGE, colorIndex: 1, isSuperTile: false },
+        { file: res.GTILE_IMAGE, colorIndex: 2, isSuperTile: false },
+        { file: res.PTILE_IMAGE, colorIndex: 3, isSuperTile: false },
+        { file: res.RTILE_IMAGE, colorIndex: 4, isSuperTile: false },
+        { file: res.YTILE_IMAGE, colorIndex: 5, isSuperTile: false }];
       tile = tilesFiles[Math.floor(randomNumber * tilesFiles.length)];
     }
     return tile;

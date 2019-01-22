@@ -1,4 +1,7 @@
-
+const zIndexField = 1;
+const zIndexBG = 0;
+const zIndexProgress = 1;
+const zIndexSteps = 1;
 
 let GameLayer = cc.Layer.extend({
   ctor(fieldStartX, fieldStartY) {
@@ -15,20 +18,20 @@ let GameLayer = cc.Layer.extend({
     //устанавливаем bg
     let background = cc.LayerColor.create(new cc.Color(160, 160, 160, 255),
       size.width, size.height);
-    this.addChild(background, 0);//z-index для слоя 
+    this.addChild(background, zIndexBG);//z-index для слоя 
     //устанавливаем field and tiles
     this.field = new FieldSprite(res.FIELD_IMAGE, Field, 9, 9, 41.5, 43);
     this.field.setPosition(this.fieldStartX, this.fieldStartY);
     this.field.setAnchorPoint(0, 0);
-    this.addChild(this.field, 1);//z-index для слоя 
+    this.addChild(this.field, zIndexField);//z-index для слоя 
     //
-    this.progressBar = new ProgressBar(res.PROGRESS_IMAGE, 24, 29.5, 169, 5000);
+    this.progressBar = new ProgressBar(res.PROGRESS_IMAGE, 24, 29.5, 169, 2000, 10);
     this.progressBar.sprite.setPosition(660, 565);
-    this.addChild(this.progressBar.sprite, 1);
+    this.addChild(this.progressBar.sprite, zIndexProgress);
     //
-    this.steps = new Steps(res.STEPS_IMAGE, 20);
+    this.steps = new Steps(res.STEPS_IMAGE, 35);
     this.steps.sprite.setPosition(662, 350);
-    this.addChild(this.steps.sprite, 1);
+    this.addChild(this.steps.sprite, zIndexSteps);
     //
     cc.eventManager.addListener({
       event: cc.EventListener.TOUCH_ONE_BY_ONE,
@@ -45,18 +48,22 @@ let GameLayer = cc.Layer.extend({
       let pickedTileRowAndColOnField = target.field.normalizePick(pickedLocation);
       let arrInfo = target.field.fieldlogic.findTiles(pickedTileRowAndColOnField);
       let commonTiles = arrInfo.arr;
-      let arrType = arrInfo.type;
+      let isSuperTileWasPicked = arrInfo.isSuperTileWasPicked;
+      let pointsForOneTile = target.progressBar.oneTileCost;
       if (commonTiles && commonTiles.length > 0) {
-        if (arrType === 2) {
+        if (isSuperTileWasPicked) {
           target.canIPick = false;
           let pick = arrInfo.superTiles;
+
+
           target.field.animationForSuperTiles(pick, function () {
-            target.mainGameLogic(commonTiles);
+            target.mainGameLogic(commonTiles, pickedLocation, pointsForOneTile);
             target.canIPick = true;
           });
 
         } else {
-          target.mainGameLogic(commonTiles)
+
+          target.mainGameLogic(commonTiles, pickedLocation, pointsForOneTile)
         }
 
       }
@@ -64,8 +71,9 @@ let GameLayer = cc.Layer.extend({
 
   },
 
-  mainGameLogic(arr) {
+  mainGameLogic(arr, loc, points) {
     this.field.deleteTiles(arr);
+    this.field.addPoints(arr, loc, points);
     this.progressBar.updateScore(arr)
     this.field.moveRemainingTiles();
     this.field.addNewTiles();
@@ -83,9 +91,9 @@ let GameLayer = cc.Layer.extend({
   },
 
   isWinOrLose() {
-    if (this.progressBar.isWon() && !this.steps.isLose()) {
+    if (this.progressBar.iswin && !this.steps.isLose()) {
       console.log('you won');
-    } else if (this.steps.isLose() && !this.progressBar.isWon()) {
+    } else if (this.steps.isLose() && !this.progressBar.iswin) {
       console.log('you lose');
     }
   }

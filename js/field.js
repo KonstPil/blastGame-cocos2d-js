@@ -1,3 +1,30 @@
+const moveDownAfterDeleteTime = 0.4;//время анимации, после удаления, сдвиг верхних клеток вниз
+const moveDownNewTilesAfterDelete = 0.4;//время анимации, после удаления, сдвиг новых клеток вниз
+//анимация для удаления 
+const moveAfterDelete = 0.5;//время анимации, перемещение в сторону прогрес бара
+const XcoordWhereTilesGoing = 626.5;//коорд х, точка перемещения для анимации,после удаления, под прогресс баром
+const YcoordWhereTilesGoing = 530;//коорд y, точка перемещения для анимации,после удаления, под прогресс баром
+//z-index
+const zIndexPoints = 5;
+const zIndexTile = 1;
+const zIndexSuperTile = zIndexTile + 1;
+//points Animation
+const movingTimeForPoint = 0.4;//время анимации, перемещение набранныз очков
+const XcoordWherePointGoing = 0;//коорд х, точка перемещения для анимации
+const YcoordWherePointGoing = 70;//коорд y, точка перемещения для анимации
+const fontSize = 24;//размер шрифта для points
+//create Supertile animation 
+const timeForAnimationScaleTo = 0.2;//время для увеличения и уменьшения при создании супер тайла
+const superTileCreateScale = 1.5; // размер увеличения при создании супер тайла по х и у
+// standart size for all Scale animation
+const standartSize = 1;//стандартный размер для тайл
+//foreverAnimation for super Tile
+const timeForSizeUpDown = 0.75;//время для анимации увеличения и уменьшения
+const foreverAnimationScale = 1.07;//до каких размеров будет увеличиваться supertile
+//animation For supetTile boom 
+const timeForBoomScaleUp = 0.5;//время увеличения tail при анимации взрыва superTile
+const timeForBoomScaleDown = 0.1;//время уменьшения до стандартного размера перед выполнением cb
+const scaleSizeForBoom = 3;//размер до которго увеличивается superTile
 
 
 let FieldSprite = cc.Sprite.extend({
@@ -26,7 +53,7 @@ let FieldSprite = cc.Sprite.extend({
       let holesBelow = tileToMove.holesBelow;
       let coordX = tile.sprite.x;
       let coordY = tile.sprite.y - holesBelow * this.tileHeightOnField;
-      let moveAction = new cc.MoveTo(0.4, coordX, coordY);
+      let moveAction = new cc.MoveTo(moveDownAfterDeleteTime, coordX, coordY);
       tile.sprite.runAction(moveAction);
     })
 
@@ -50,15 +77,15 @@ let FieldSprite = cc.Sprite.extend({
     tile.sprite.setPosition(this.xTailStartOnField + col * this.tileWidthOnField, this.yTailStartOnField + (row + holesUpon) * this.tileHeightOnField);
     if (tile.isSuperTile) {
       this.foreverAnimationForSuperTile(tile.sprite);
-      this.addChild(tile.sprite, tile.zIndex + 1);
+      this.addChild(tile.sprite, zIndexSuperTile);
     } else {
-      this.addChild(tile.sprite, tile.zIndex);
+      this.addChild(tile.sprite, zIndexTile);
     }
 
 
     let coordX = this.xTailStartOnField + col * this.tileWidthOnField;
     let coordY = this.yTailStartOnField + row * this.tileHeightOnField;
-    let moveAction = new cc.MoveTo(0.4, coordX, coordY);
+    let moveAction = new cc.MoveTo(moveDownNewTilesAfterDelete, coordX, coordY);
     tile.sprite.runAction(moveAction);
     this.fieldlogic.tiles[row][col] = tile;
   },
@@ -67,7 +94,7 @@ let FieldSprite = cc.Sprite.extend({
   deleteTiles(arr) {
     arr.forEach(tile => {
       let tileSprite = tile.sprite;
-      let action = new cc.MoveTo(0.5, 626.5, 530);
+      let action = new cc.MoveTo(moveAfterDelete, XcoordWhereTilesGoing, YcoordWhereTilesGoing);
       let seq = new cc.Sequence(action, cc.callFunc(function (tileSprite) {
         this.removeChild(tileSprite)
       }, this))
@@ -81,16 +108,32 @@ let FieldSprite = cc.Sprite.extend({
   },
 
 
+  addPoints(arr, loc, points) {
+    let pointsValue = arr.length * points;
+    let pointsText = new cc.LabelTTF("+" + pointsValue, "Coiny", fontSize, cc.TEXT_ALIGNMENT_CENTER);
+    this.addChild(pointsText, zIndexPoints);
+    pointsText.setPosition(loc.x, loc.y);
+    let moveAction = new cc.MoveBy(movingTimeForPoint, XcoordWherePointGoing, YcoordWherePointGoing);
+    let seq = new cc.Sequence(moveAction, cc.callFunc(function (pointsText) {
+      this.removeChild(pointsText)
+    }, this));
+    pointsText.runAction(seq);
+  },
+
 
   createSuperTile(tile) {
     let superTile = this.fieldlogic.createSuperTile(tile);
     superTile.sprite.setPosition(this.xTailStartOnField + superTile.col * this.tileWidthOnField, this.yTailStartOnField + superTile.row * this.tileHeightOnField);
-    this.addChild(superTile.sprite, tile.zIndex + 1);
-    let actionUp = new cc.ScaleTo(0.1, 1.4, 1.4);
-    let actionDown = new cc.ScaleTo(0.1, 1, 1);
-    let seq = new cc.Sequence([actionUp, actionDown]);
+    this.addChild(superTile.sprite, zIndexSuperTile);
+    let actionUp = new cc.ScaleTo(timeForAnimationScaleTo, superTileCreateScale, superTileCreateScale);
+    let actionDown = new cc.ScaleTo(timeForAnimationScaleTo, standartSize, standartSize);
+    let seq = new cc.Sequence(actionUp, actionDown, cc.callFunc(function () {
+      let sprite = superTile.sprite;
+      this.foreverAnimationForSuperTile(sprite);
+
+    }, this));
     superTile.sprite.runAction(seq);
-    this.foreverAnimationForSuperTile(superTile.sprite);
+
 
   },
 
@@ -106,28 +149,28 @@ let FieldSprite = cc.Sprite.extend({
         tile.setPosition(this.xTailStartOnField + j * this.tileWidthOnField, this.yTailStartOnField + i * this.tileHeightOnField);
         if (this.fieldlogic.tiles[i][j].isSuperTile) {
           this.foreverAnimationForSuperTile(tile);
-          this.addChild(tile, tile.zIndex + 1);
+          this.addChild(tile, zIndexSuperTile);
         } else {
-          this.addChild(tile, tile.zIndex);
+          this.addChild(tile, zIndexTile);
         }
       }
     }
   },
 
-  foreverAnimationForSuperTile(tileSprite) {
-    let actionUp = new cc.ScaleTo(0.75, 1.07, 1.07);
-    let actionDown = new cc.ScaleTo(0.75, 1, 1);
+  foreverAnimationForSuperTile(tile) {
+    let actionUp = new cc.ScaleTo(timeForSizeUpDown, foreverAnimationScale, foreverAnimationScale);
+    let actionDown = new cc.ScaleTo(timeForSizeUpDown, standartSize, standartSize);
     let seq = new cc.Sequence([actionUp, actionDown]);
     var repeatForever = new cc.RepeatForever(seq);
-    tileSprite.runAction(repeatForever);
+    tile.runAction(repeatForever);
   },
 
   animationForSuperTiles(arr, cb) {
     for (let i = 0; i < arr.length; i++) {
       if (i === 0) {
-        arr[i].sprite.runAction(cc.sequence(cc.scaleTo(0.5, 3, 3), cc.scaleTo(0.1, 1, 1), cc.callFunc(cb, this)));
+        arr[i].sprite.runAction(cc.sequence(cc.scaleTo(timeForBoomScaleUp, scaleSizeForBoom, scaleSizeForBoom), cc.scaleTo(timeForBoomScaleDown, standartSize, standartSize), cc.callFunc(cb, this)));
       }
-      arr[i].sprite.runAction(cc.sequence(cc.scaleTo(0.5, 3, 3), cc.scaleTo(0.1, 1, 1)));
+      arr[i].sprite.runAction(cc.sequence(cc.scaleTo(timeForBoomScaleUp, scaleSizeForBoom, scaleSizeForBoom), cc.scaleTo(timeForBoomScaleDown, standartSize, standartSize)));
     }
   }
 })
