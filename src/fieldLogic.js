@@ -98,14 +98,14 @@ class Field {
   //проверяем окружение выбранной tile, затем проверям окружение клеток, которые окружают выбранную нами tile  и т.д пока окружение всех клеток не проверим
   findAllCommonTiles(tile, tilesForSuperTile) {
     let closestCommonTiles = this.findCommonColorTile(tile);
+
     if (closestCommonTiles.length > 0) {
-      tile.isPicked = true;
       let commonTiles = [tile];
       while (closestCommonTiles.length > 0) {
         for (let i = 0; i < closestCommonTiles.length; i++) {
-          closestCommonTiles[i].isPicked = true;
           let closestTilesForCheckedTile = this.findCommonColorTile(closestCommonTiles[i]);
-          closestCommonTiles.push(...closestTilesForCheckedTile);
+          let filterArr = closestTilesForCheckedTile.filter(el => !closestCommonTiles.includes(el));//фильтруем чтобы избежать повторное добавление
+          closestCommonTiles.push(...filterArr);
           commonTiles.push(...closestCommonTiles.splice(i, 1))
         }
       }
@@ -119,7 +119,7 @@ class Field {
 
   //проверяме 4 направления выбранной tile
   findCommonColorTile(tile) {
-
+    tile.isPicked = true;
     let tailsWithinField = [];
     let upTilePosition = { row: tile.row + 1, col: tile.col };
     let downTilePosition = { row: tile.row - 1, col: tile.col };

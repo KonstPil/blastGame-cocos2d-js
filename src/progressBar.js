@@ -26,7 +26,7 @@ class ProgressBar {
   }
 
   addScore() {
-    this.scoreText = new cc.LabelTTF("0/" + `${this.goal}`, "Coiny", fontSizeForScore, cc.TEXT_ALIGNMENT_CENTER);
+    this.scoreText = new cc.LabelTTF("0/" + `${this.goal}`, 'Coiny', fontSizeForScore, cc.TEXT_ALIGNMENT_CENTER);
     this.sprite.addChild(this.scoreText, zIndexScore);
     this.scoreText.setPosition(XCoordForPositionScoreText, YCoordForPositionScoreText);
   }

@@ -55,6 +55,8 @@ let GameLayer = cc.Layer.extend({
       let commonTiles = arrInfo.arr;
       let isSuperTileWasPicked = arrInfo.isSuperTileWasPicked;
       let pointsForOneTile = target.progressBar.oneTileCost;
+      console.log(commonTiles);
+
       if (commonTiles && commonTiles.length > 0) {
         target.canIPick = false;
         if (isSuperTileWasPicked) {
@@ -102,7 +104,7 @@ let GameLayer = cc.Layer.extend({
       this.winOrLoseTextapperance('You won!')
       cc.eventManager.removeListener(this.listener)
     } else if (isStepsEnd && !isScoreAchieved) {
-      this.winOrLoseTextapperance('You lost!')
+      this.winOrLoseTextapperance('Game over!')
 
       cc.eventManager.removeListener(this.listener)
     }
@@ -118,23 +120,45 @@ let GameLayer = cc.Layer.extend({
 
 })
 
-function scene() {
-  let scene = new cc.Scene();
-  let layer = new GameLayer(18, 18);
-  scene.addChild(layer);
-  return scene;
-}
+
+
+let GameScene = cc.Scene.extend({
+  onEnter: function () {
+    this._super();
+
+    this.addChild(new GameLayer(18, 18), 0);
+    this.addChild(new UILayer(), 1);
+  }
+});
+
+
+
+var UILayer = cc.Layer.extend({
+  ctor: function () {
+    this._super();
+    this.createScreen();
+  },
+  createScreen: function () {
+
+    var restartButton = new Button('restart', function () {
+      cc.director.runScene(new cc.TransitionFadeBL(2.0, new GameScene()));
+    });
+
+    restartButton.setPosition(660, 70);
+    this.addChild(restartButton);
+  }
+});
+
 
 
 window.onload = function () {
-
   cc.game.onStart = function () {
     cc.view.setDesignResolutionSize(800, 600, cc.ResolutionPolicy.
       SHOW_ALL);
     cc.view.resizeWithBrowserSize(true);
     //load resources
     cc.LoaderScene.preload(g_resources, function () {
-      cc.director.runScene(scene());
+      cc.director.runScene(new cc.TransitionShrinkGrow(2.0, new GameScene()));
     }, this);
   };
   cc.game.run("gameCanvas");
