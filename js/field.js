@@ -14,7 +14,7 @@ const XcoordWherePointGoing = 0;//коорд х, точка перемещени
 const YcoordWherePointGoing = 70;//коорд y, точка перемещения для анимации
 const fontSize = 24;//размер шрифта для points
 //create Supertile animation 
-const timeForAnimationScaleTo = 0.2;//время для увеличения и уменьшения при создании супер тайла
+const timeForAnimationScaleTo = 0.1;//время для увеличения и уменьшения при создании супер тайла
 const superTileCreateScale = 1.5; // размер увеличения при создании супер тайла по х и у
 // standart size for all Scale animation
 const standartSize = 1;//стандартный размер для тайл
@@ -23,8 +23,10 @@ const timeForSizeUpDown = 0.75;//время для анимации увелич
 const foreverAnimationScale = 1.07;//до каких размеров будет увеличиваться supertile
 //animation For supetTile boom 
 const timeForBoomScaleUp = 0.5;//время увеличения tail при анимации взрыва superTile
-const timeForBoomScaleDown = 0.1;//время уменьшения до стандартного размера перед выполнением cb
 const scaleSizeForBoom = 3;//размер до которго увеличивается superTile
+//animation For supetTile boom 
+const timeForNormalScaleUp = 0.35;//время увеличения tail при анимации обычных тайлов
+const scaleSizeForNormal = 0.5;//размер до которго уменьшаются обычные тайлы
 
 
 let FieldSprite = cc.Sprite.extend({
@@ -127,12 +129,12 @@ let FieldSprite = cc.Sprite.extend({
     this.addChild(superTile.sprite, zIndexSuperTile);
     let actionUp = new cc.ScaleTo(timeForAnimationScaleTo, superTileCreateScale, superTileCreateScale);
     let actionDown = new cc.ScaleTo(timeForAnimationScaleTo, standartSize, standartSize);
-    let seq = new cc.Sequence(actionUp, actionDown, cc.callFunc(function () {
+    this.animationForCreateSuperTile = new cc.Sequence(actionUp, actionDown, cc.callFunc(function () {
       let sprite = superTile.sprite;
       this.foreverAnimationForSuperTile(sprite);
 
     }, this));
-    superTile.sprite.runAction(seq);
+    superTile.sprite.runAction(this.animationForCreateSuperTile);
 
 
   },
@@ -168,9 +170,19 @@ let FieldSprite = cc.Sprite.extend({
   animationForSuperTiles(arr, cb) {
     for (let i = 0; i < arr.length; i++) {
       if (i === 0) {
-        arr[i].sprite.runAction(cc.sequence(cc.scaleTo(timeForBoomScaleUp, scaleSizeForBoom, scaleSizeForBoom), cc.scaleTo(timeForBoomScaleDown, standartSize, standartSize), cc.callFunc(cb, this)));
+        arr[i].sprite.runAction(cc.sequence(cc.scaleTo(timeForBoomScaleUp, scaleSizeForBoom, scaleSizeForBoom), cc.callFunc(cb, this)));
       }
-      arr[i].sprite.runAction(cc.sequence(cc.scaleTo(timeForBoomScaleUp, scaleSizeForBoom, scaleSizeForBoom), cc.scaleTo(timeForBoomScaleDown, standartSize, standartSize)));
+      arr[i].sprite.runAction(cc.sequence(cc.scaleTo(timeForBoomScaleUp, scaleSizeForBoom, scaleSizeForBoom)));
+    }
+  },
+
+  animationForNormalTiles(arr, cb) {
+    for (let i = 0; i < arr.length; i++) {
+      if (i === arr.length - 1) {
+        arr[i].sprite.runAction(cc.sequence(cc.scaleTo(timeForNormalScaleUp, scaleSizeForNormal, scaleSizeForNormal), cc.callFunc(cb, this)));
+      }
+      arr[i].sprite.runAction(cc.sequence(cc.scaleTo(timeForNormalScaleUp, scaleSizeForNormal, scaleSizeForNormal)));
     }
   }
+
 })

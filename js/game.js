@@ -2,6 +2,10 @@ const zIndexField = 1;
 const zIndexBG = 0;
 const zIndexProgress = 1;
 const zIndexSteps = 1;
+const zIndexWinLose = 2;
+const fontSizeWinLose = 80;
+const xPositionWinLose = 270;
+const yPositionWinLose = 320;
 
 let GameLayer = cc.Layer.extend({
   ctor(fieldStartX, fieldStartY) {
@@ -25,15 +29,16 @@ let GameLayer = cc.Layer.extend({
     this.field.setAnchorPoint(0, 0);
     this.addChild(this.field, zIndexField);//z-index для слоя 
     //
-    this.progressBar = new ProgressBar(res.PROGRESS_IMAGE, 24, 29.5, 169, 2000, 10);
+    this.progressBar = new ProgressBar(res.PROGRESS_IMAGE, 24, 29.5, 169, 1000, 5);
     this.progressBar.sprite.setPosition(660, 565);
     this.addChild(this.progressBar.sprite, zIndexProgress);
     //
-    this.steps = new Steps(res.STEPS_IMAGE, 35);
-    this.steps.sprite.setPosition(662, 350);
+    let goal = this.progressBar.goal;
+    this.steps = new Steps(res.STEPS_IMAGE, 35, goal);
+    this.steps.sprite.setPosition(662, 300);
     this.addChild(this.steps.sprite, zIndexSteps);
     //
-    cc.eventManager.addListener({
+    this.listener = cc.eventManager.addListener({
       event: cc.EventListener.TOUCH_ONE_BY_ONE,
       swallowTouches: true,
       onTouchBegan: this.onTouchBegan,
@@ -51,19 +56,18 @@ let GameLayer = cc.Layer.extend({
       let isSuperTileWasPicked = arrInfo.isSuperTileWasPicked;
       let pointsForOneTile = target.progressBar.oneTileCost;
       if (commonTiles && commonTiles.length > 0) {
+        target.canIPick = false;
         if (isSuperTileWasPicked) {
-          target.canIPick = false;
           let pick = arrInfo.superTiles;
-
-
           target.field.animationForSuperTiles(pick, function () {
             target.mainGameLogic(commonTiles, pickedLocation, pointsForOneTile);
             target.canIPick = true;
           });
-
         } else {
-
-          target.mainGameLogic(commonTiles, pickedLocation, pointsForOneTile)
+          target.field.animationForNormalTiles(commonTiles, function () {
+            target.mainGameLogic(commonTiles, pickedLocation, pointsForOneTile);
+            target.canIPick = true;
+          });
         }
 
       }
@@ -74,11 +78,12 @@ let GameLayer = cc.Layer.extend({
   mainGameLogic(arr, loc, points) {
     this.field.deleteTiles(arr);
     this.field.addPoints(arr, loc, points);
-    this.progressBar.updateScore(arr)
+    this.progressBar.updateScore(arr);
     this.field.moveRemainingTiles();
     this.field.addNewTiles();
-    this.steps.updateSteps()
+    this.steps.updateSteps();
     this.isWinOrLose();
+
   },
 
 
@@ -91,11 +96,24 @@ let GameLayer = cc.Layer.extend({
   },
 
   isWinOrLose() {
-    if (this.progressBar.iswin && !this.steps.isLose()) {
-      console.log('you won');
-    } else if (this.steps.isLose() && !this.progressBar.iswin) {
-      console.log('you lose');
+    let isScoreAchieved = this.progressBar.isScoreAchieved();
+    let isStepsEnd = this.steps.isStepsEnd();
+    if (isScoreAchieved && !isStepsEnd || isScoreAchieved && isStepsEnd) {
+      this.winOrLoseTextapperance('You won!')
+      cc.eventManager.removeListener(this.listener)
+    } else if (isStepsEnd && !isScoreAchieved) {
+      this.winOrLoseTextapperance('You lost!')
+
+      cc.eventManager.removeListener(this.listener)
     }
+  },
+
+  winOrLoseTextapperance(string) {
+    let text = new cc.LabelTTF(string, "Coiny", fontSizeWinLose, cc.TEXT_ALIGNMENT_CENTER);
+    this.addChild(text, zIndexWinLose);
+    text.setPosition(xPositionWinLose, this.height + 100);
+    let moveAction = new cc.MoveTo(2.7, xPositionWinLose, yPositionWinLose);
+    text.runAction(moveAction);
   }
 
 })

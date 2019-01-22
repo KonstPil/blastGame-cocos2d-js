@@ -2,7 +2,7 @@ const moveBarAnimationTime = 0.3; //время движения прогресс
 const zIndexBar = 1;
 const zIndexScore = 2;
 const fontSizeForScore = 24;
-const updateScoreTime = 0.01; //время с которым обновляется счётчик
+const updateScoreTime = 0.007; //время с которым обновляется счётчик
 const XCoordForPositionScoreText = 113;//x места расположения текста с кол-вом очков
 const YCoordForPositionScoreText = 55;//y места расположения текста с кол-вом очков
 
@@ -33,30 +33,33 @@ class ProgressBar {
 
   updateScore(arr) {
     let dif = arr.length * this.oneTileCost;
-    let progress = Math.floor(this.score / this.goal * 100);
-
+    let scoreForAnimation = this.score;
+    this.score = this.score + dif;
+    let progressBefore = Math.floor(scoreForAnimation / this.goal * 100);
     let update = () => {
-      this.score++;
-      dif--;
-      let progressNow = Math.floor(this.score / this.goal * 100);
-      this.isWon()
-      if (!this.iswin) {
-        if (progressNow > progress) {
+      scoreForAnimation++;
+      let progressNow = Math.floor(scoreForAnimation / this.goal * 100);
+      let finishAnimationOrNot = scoreForAnimation > this.goal ? true : false;
+      if (!finishAnimationOrNot) {
+        if (progressNow > progressBefore) {
           this.addBar(progressNow)
-          progress = progressNow
+          progressBefore = progressNow
         }
-        this.scoreText.setString(this.score + "/" + `${this.goal}`);
-        if (dif === 0) {
+        this.scoreText.setString(scoreForAnimation + "/" + `${this.goal}`);
+        if (scoreForAnimation >= this.score) {
           this.sprite.unschedule(update)
         }
+      } else {
+        this.sprite.unschedule(update)
       }
     }
     this.sprite.schedule(update, updateScoreTime);
   }
 
-  isWon() {
-    this.iswin = this.score > this.goal ? true : false;
+  isScoreAchieved() {
+    return this.score >= this.goal ? true : false;
   }
+
 
   addBar(progress) {
     let bars = progress - this.currentBarPosition;
