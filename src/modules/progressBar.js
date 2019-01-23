@@ -26,12 +26,14 @@ let ProgressBar = (function () {
       this.addScore();
     }
 
+    //добавляем начальную надпись на экран
     addScore() {
       this.scoreText = new cc.LabelTTF("0/" + `${this.goal}`, 'Coiny', fontSizeForScore, cc.TEXT_ALIGNMENT_CENTER);
       this.sprite.addChild(this.scoreText, zIndexScore);
       this.scoreText.setPosition(XCoordForPositionScoreText, YCoordForPositionScoreText);
     }
 
+    //обновляем счёт и отображаем счётчик добавления очков 
     updateScore(arr) {
       let dif = arr.length * this.oneTileCost;
       let scoreForAnimation = this.score;
@@ -57,11 +59,12 @@ let ProgressBar = (function () {
       this.sprite.schedule(update, updateScoreTime);
     }
 
+
     isScoreAchieved() {
       return this.score >= this.goal ? true : false;
     }
 
-
+    //плавная анимация движения прогресса при добавлении очков
     addBar(progress) {
       let bars = progress - this.currentBarPosition;
       let oneBar = new cc.Sprite(res.ONEBAR_IMAGE);

@@ -110,7 +110,7 @@ let FieldSprite = (function () {
       })
     },
 
-
+    //добавляем очки на месте удалённый клеток
     addPoints(arr, loc, points) {
       let pointsValue = arr.length * points;
       let pointsText = new cc.LabelTTF("+" + pointsValue, "Coiny", fontSize, cc.TEXT_ALIGNMENT_CENTER);
@@ -123,7 +123,7 @@ let FieldSprite = (function () {
       pointsText.runAction(seq);
     },
 
-
+    //создание супер тайла
     createSuperTile(tile) {
       let superTile = this.fieldlogic.createSuperTile(tile);
       superTile.sprite.setPosition(this.xTailStartOnField + superTile.col * this.tileWidthOnField, this.yTailStartOnField + superTile.row * this.tileHeightOnField);
@@ -160,6 +160,7 @@ let FieldSprite = (function () {
       }
     },
 
+    //бесконечная анимация для супер тайла
     foreverAnimationForSuperTile(tile) {
       let actionUp = new cc.ScaleTo(timeForSizeUpDown, foreverAnimationScale, foreverAnimationScale);
       let actionDown = new cc.ScaleTo(timeForSizeUpDown, standartSize, standartSize);
@@ -168,6 +169,7 @@ let FieldSprite = (function () {
       tile.runAction(repeatForever);
     },
 
+    //анимация для 'взрыва' супер тайлов
     animationForSuperTiles(arr, cb) {
       for (let i = 0; i < arr.length; i++) {
         if (i === 0) {
@@ -177,6 +179,7 @@ let FieldSprite = (function () {
       }
     },
 
+    //анимация для исчезновения обычных тайлов
     animationForNormalTiles(arr, cb) {
       for (let i = 0; i < arr.length; i++) {
         if (i === arr.length - 1) {

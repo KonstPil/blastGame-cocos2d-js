@@ -60,11 +60,11 @@ let GameLayer = (function () {
     onTouchBegan(touch, event) {
       let target = event.getCurrentTarget();
       if (target.canIPick) {
-        let location = touch.getLocation();//находим координаты относительно field
-        let pickedLocation = target.normalizeLocation(location);
-        let pickedTileRowAndColOnField = target.field.normalizePick(pickedLocation);
+        let location = touch.getLocation();
+        let pickedLocation = target.normalizeLocation(location);//находим координаты относительно field
+        let pickedTileRowAndColOnField = target.field.normalizePick(pickedLocation);//находим координаты col and row on the field
         let arrInfo = target.field.fieldlogic.findTiles(pickedTileRowAndColOnField);
-        let commonTiles = arrInfo.arr;
+        let commonTiles = arrInfo.arr;//массив для удаления с поля
         let isSuperTileWasPicked = arrInfo.isSuperTileWasPicked;
         let pointsForOneTile = target.progressBar.oneTileCost;
 
@@ -88,6 +88,7 @@ let GameLayer = (function () {
 
     },
 
+    //основная логика игры 
     mainGameLogic(arr, loc, points) {
       this.field.deleteTiles(arr);
       this.field.addPoints(arr, loc, points);
@@ -108,6 +109,8 @@ let GameLayer = (function () {
       return pick;
     },
 
+
+    //проверка на gameOver and won
     isWinOrLose() {
       let isScoreAchieved = this.progressBar.isScoreAchieved();
       let isStepsEnd = this.steps.isStepsEnd();
@@ -121,6 +124,7 @@ let GameLayer = (function () {
       }
     },
 
+    //появления текста после выйгрыша или пройгрыша
     winOrLoseTextapperance(string) {
       let text = new cc.LabelTTF(string, "Coiny", fontSizeWinLose, cc.TEXT_ALIGNMENT_CENTER);
       this.addChild(text, zIndexWinLose);

@@ -7,12 +7,12 @@ let Button = (function () {
   let Button = ccui.Button.extend({
     ctor(caption, callback) {
       this._super();
-      this.createScreen(caption);
+      this.init(caption);
       this.createListeners(callback)
     },
-    createScreen(caption) {
+
+    init(caption) {
       this.loadTextures(res.RESBUTTON_IMAGE, res.RESBUTTONA_IMAGE);
-      let size = this.getContentSize();
       let captionLabel = new cc.LabelTTF(caption, "Coiny", fontSizeForTextButton);
       captionLabel.setPosition(xPositionForTextInButton, yPositionForTextInButton);
       this.addChild(captionLabel);

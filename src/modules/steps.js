@@ -48,6 +48,7 @@ let Steps = (function () {
       goalText.setPosition(xPositionForGoalText, yPositionForGoalText);
     }
 
+    //обновляем счёт после хода
     updateSteps() {
       if (!this.isStepsEnd()) {
         this.steps--;

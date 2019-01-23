@@ -12,6 +12,11 @@ let fieldLogic = (function () {
       this.createTilesArray();
     }
 
+    /**
+     * находим массив клеток которые необходимо удалить (одного цвета или под супер tile)
+     * @param {Object} pickedTileCoord представляет col and row клетки на которую нажали
+     * @return {Object}  массив и дополнительные данные о нём(нажали на супер тайл или нет, если да то ещё массив со всеми супер тайлами в радиусе взрыва)
+     */
     findTiles(pickedTileCoord) {
       let arrInfo = {};
       if (this.isWithinField(pickedTileCoord)) {
@@ -32,7 +37,12 @@ let fieldLogic = (function () {
       return arrInfo
     }
 
-    //взрываем клетки вокруг superTile и если в радиусе есть ещё 1 superTIle детонируем и его
+    /**
+     * проверяем 1 супер тайл если, добавляем массив для удаления все клетки в заданном радиусе, если в радиусе есть ещё 1 супер тайл то проверям его и так же добавляем в массив все клетки для удаления и так пока в радиусе не останутся супер тайлы
+     * @param {Object} tile клетка со всеми свойствами
+     * @param {Number} radius в каком радиусе от супертайл будут выбираться клетки 
+     * @return {Object}  массив с клетками для удаления и все супер тайлы которые находятся в радиусе друг друга
+     */
     superTileAction(tile, radius) {
       let superTiles = [];
       let boomArr = this.tilesForSuperTileBoom(tile, radius);
@@ -50,11 +60,15 @@ let fieldLogic = (function () {
         }
 
       }
-
-
       return { boomArr, superTiles }
     }
 
+    /**
+    * добавляем в массив все клетки в заданном радиусе
+    * @param {Object} tile клетка со всеми свойствами
+    * @param {Number} radius в каком радиусе от супертайл будут выбираться клетки 
+    * @return {Array}  массив с клетками для удаления 
+    */
     tilesForSuperTileBoom(superTile, radius) {
       let boomArr = [];
       for (let i = superTile.row - radius; i <= superTile.row + radius; i++) {
@@ -68,7 +82,9 @@ let fieldLogic = (function () {
     }
 
 
-    //добавляем tile на поле и создаём двумерный массив отражающий игрове поле
+    /**
+    * создаём двумерный массив и заполняем его тайлами которые создаём в createOneTile()
+    */
     createTilesArray() {
       for (let row = 0; row < this.rows; row++) {
         this.tiles[row] = [];
@@ -79,24 +95,46 @@ let fieldLogic = (function () {
       }
     }
 
+    /**
+     * создаём тайл
+     * @param {Number} row в каком ряду создаём клетку
+     * @param {Number} col в каком столбце создаём клетку
+     * @return {Object}  клетка со всеми свойствами
+     */
     createOneTile(row, col) {
-      let tileInfo = this.findRandomColorForTile();
+      let tileInfo = this.findRandomTile();
       let tile = new Tile(tileInfo.file, row, col, tileInfo.colorIndex, tileInfo.isSuperTile);
       return tile
     }
 
+    /**
+     * создаём супер тайл
+     * @param {Object} tile клетка на месте которой мы будем создавать супер тайл
+     * @return {Object}  супер клетка со всеми свойствами
+     */
     createSuperTile(tile) {
       let superTile = new Tile(res.BOMB_IMAGE, tile.row, tile.col, colorIndexForSuperTile, true);
       this.tiles[tile.row][tile.col] = superTile;
       return superTile
     }
-    //проверям находится ли клетка внутри игрового поля
-    isWithinField(tail) {
-      return tail.row >= 0 && tail.row < this.rows && tail.col >= 0 && tail.col < this.colls;
+
+    /**
+    * проверям находится ли координаты внутри игрового поля
+    * @param {Object} tile координаты 
+    * @return {Boolean}  находится внутри поля или нет
+    */
+    isWithinField(tile) {
+      return tile.row >= 0 && tile.row < this.rows && tile.col >= 0 && tile.col < this.colls;
     }
 
 
-    //проверяем окружение выбранной tile, затем проверям окружение клеток, которые окружают выбранную нами tile  и т.д пока окружение всех клеток не проверим
+
+    /**
+   * поиск клеток одинакого цвета, для этого: проверяем окружение выбранной tile, затем проверям окружение клеток, которые окружают выбранную нами tile  и т.д пока окружение всех клеток не проверим
+   * @param {Object} tile тайл на которую нажали
+   * @param {Number} tilesForSuperTile сколько тайлов должно быть чтобы на месте нажатой тайл появилась супер тайл
+   * @return {Array} массив со всеми тайлами одного цвета
+   */
     findAllCommonTiles(tile, tilesForSuperTile) {
       let closestCommonTiles = this.findCommonColorTile(tile);
 
@@ -118,7 +156,11 @@ let fieldLogic = (function () {
     }
 
 
-    //проверяме 4 направления выбранной tile
+    /**
+   * проверям выбранную клетку по 4 направления на наличие клеток одинакого цвета
+   * @param {Object} tile тайл которую проверям
+   * @return {Array} массив со всеми подходящими тайлами
+   */
     findCommonColorTile(tile) {
       tile.isPicked = true;
       let tailsWithinField = [];
@@ -139,7 +181,10 @@ let fieldLogic = (function () {
 
     }
 
-    //сдвигаем клетки под которомы есть пустоты после удаления
+    /**
+   * в двумерном массиве переставляем клетки под которыми null т.е пустоты
+   * @return {Array} массив со всеми тайлами которые надо передвинуть и на сколько (для анимации)
+   */
     whichTilesNeedMove() {
       let tilesToMove = [];
       for (let i = 1; i < this.rows; i++) {
@@ -164,8 +209,11 @@ let fieldLogic = (function () {
       return tilesToMove
     }
 
-    //находим рандомный цвет для ячейки
-    findRandomColorForTile() {
+    /**
+  * находим рандомную клетку которую будем добавлять 
+  * @return {Object} цвет, супертайл или нет, и цветовой индекс
+  */
+    findRandomTile() {
       let tile;
       let randomNumber = Math.random();
       if (randomNumber < oddsForSuperTileCreation) {
